@@ -1,5 +1,6 @@
 from game_state import Connect43D
-
+from game_minimax import get_best_move
+from game_minimax import ai_move
 
 def run_game():
     game = Connect43D()
