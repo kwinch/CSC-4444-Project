@@ -1,6 +1,37 @@
 # CSC-4444-Project
 An AI that can plays 3D Connect Four against a player.
 
+### How to Run: 
+Download and unzip the folder. Navigate to the file "game_interface.py" and run it to start the game. 
+
+### Requirements: 
+PyOpenGL installed. In the terminal, run: 
+  pip install PyOpenGL
+
+PyGame installed. In the terminal, run: 
+  pip install pygame
+
+### Controls: 
+Use WASD to rotate the display. 
+Use the arrow keys to select a peg, highlighted in blue.
+Use the "enter" key to place a piece on the selected peg. The player will place red pieces, the AI will place yellow pieces. 
+
+
+## Files
+
+game_state.py  
+  -Contains the Connect43D class and all game rules.  
+main.py  
+  -Simple terminal runner for testing the game manually.  
+tests.py  
+  -Basic assertion tests for the game logic.  
+game_ab.py
+  -Alpha-Beta pruning tree.
+game_minimax.py
+  -Minimax algorithm.
+game_interface.py
+  -3D interface for playing the game.
+
 ----------------------------------------------------------------
 ### Max Duet Game Functions Notes and Integration:
 
