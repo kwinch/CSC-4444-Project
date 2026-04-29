@@ -83,7 +83,6 @@ def sphere():
     
 def drop_piece(col, depth):
     try:
-        print(f"Input move: col={col}, depth={depth}")
         game.make_move(col, depth)
         return True
     except Exception as e:
