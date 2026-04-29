@@ -3,6 +3,8 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+from game_state import Connect43D
+from game_minimax import get_best_move
 
 pygame.init()
 
@@ -21,8 +23,9 @@ glMatrixMode(GL_MODELVIEW)
 rot1 = 0
 rot2 = 0
 
-board = [[[0 for _ in range(7)] for _ in range(6)] for _ in range(6)]
-current_player = 1
+#board = [[[0 for _ in range(7)] for _ in range(6)] for _ in range(6)]
+game = Connect43D()
+game.current_player
 
 selected_col = 3
 selected_depth = 3
@@ -30,42 +33,42 @@ selected_depth = 3
 def cube():
     glBegin(GL_QUADS)
 
-    # ───────────────────────── FRONT FACE
+    #FRONT FACE
     glNormal3f(0, 0, 1)
     glVertex3f(-0.5, -0.5,  0.5)
     glVertex3f( 0.5, -0.5,  0.5)
     glVertex3f( 0.5,  0.5,  0.5)
     glVertex3f(-0.5,  0.5,  0.5)
 
-    # ───────────────────────── BACK FACE
+    #BACK FACE
     glNormal3f(0, 0, -1)
     glVertex3f(-0.5, -0.5, -0.5)
     glVertex3f(-0.5,  0.5, -0.5)
     glVertex3f( 0.5,  0.5, -0.5)
     glVertex3f( 0.5, -0.5, -0.5)
 
-    # ───────────────────────── LEFT FACE
+    #LEFT FACE
     glNormal3f(-1, 0, 0)
     glVertex3f(-0.5, -0.5, -0.5)
     glVertex3f(-0.5, -0.5,  0.5)
     glVertex3f(-0.5,  0.5,  0.5)
     glVertex3f(-0.5,  0.5, -0.5)
 
-    # ───────────────────────── RIGHT FACE
+    #RIGHT FACE
     glNormal3f(1, 0, 0)
     glVertex3f(0.5, -0.5, -0.5)
     glVertex3f(0.5,  0.5, -0.5)
     glVertex3f(0.5,  0.5,  0.5)
     glVertex3f(0.5, -0.5,  0.5)
 
-    # ───────────────────────── TOP FACE
+    #TOP FACE
     glNormal3f(0, 1, 0)
     glVertex3f(-0.5, 0.5, -0.5)
     glVertex3f(-0.5, 0.5,  0.5)
     glVertex3f( 0.5, 0.5,  0.5)
     glVertex3f( 0.5, 0.5, -0.5)
 
-    # ───────────────────────── BOTTOM FACE
+    #BOTTOM FACE
     glNormal3f(0, -1, 0)
     glVertex3f(-0.5, -0.5, -0.5)
     glVertex3f( 0.5, -0.5, -0.5)
@@ -78,45 +81,44 @@ def sphere():
     quad = gluNewQuadric()
     gluSphere(quad, 0.3, 20, 20)
     
-def drop_piece(col, depth, player):
-    for row in range(5, -1, -1):
-        if board[row][col][depth] == 0:
-            board[row][col][depth] = player
-            return True
-    if not (0 <= col < 6 and 0 <= depth < 7):
+def drop_piece(col, depth):
+    try:
+        print(f"Input move: col={col}, depth={depth}")
+        game.make_move(col, depth)
+        return True
+    except Exception as e:
+        print(e)  
         return False
     
 def draw_board(): 
     for depth in range(7): 
         for col in range(6):
             glPushMatrix()
-            
            
-            glTranslatef(col - 3, 1.3, depth - 3)
+            glTranslatef(col - 2.5, 1.3, depth - 3)
             
             if col == selected_col and depth == selected_depth:
-                glColor3f(0.2, 0.6, 1.0)  # bright selection
+                glColor3f(0.2, 0.6, 1.0)
             else:
                 glColor3f(0.7, 0.7, 0.7)
-            
-           
+
             glScalef(0.2, 3.5, 0.2)
             cube()
 
             glPopMatrix()
             
     for row in range(6):
-        for col in range(6):
-            for depth in range(7):
+        for depth in range(6):
+            for col in range(7):
 
                 glPushMatrix()
 
-                glTranslatef(col - 3, row * 0.7, depth - 3)
+                glTranslatef(col - 2.5, row * 0.7, depth - 3)
 
-                if board[row][col][depth] == 1:
+                if game.board[row][depth][col] == 1:
                     glColor3f(1, 0, 0)
                     sphere()
-                elif board[row][col][depth] == 2:
+                elif game.board[row][depth][col] == 2:
                     glColor3f(1, 1, 0)
                     sphere()
 
@@ -150,16 +152,20 @@ while running:
                 selected_col = min(5, selected_col + 1)
 
             # DEPTH SELECTION (UP/DOWN)
-            elif event.key == pygame.K_DOWN:
-                selected_depth = min(6, selected_depth + 1)
             elif event.key == pygame.K_UP:
+                selected_depth = min(6, selected_depth + 1)
+            elif event.key == pygame.K_DOWN:
                 selected_depth = max(0, selected_depth - 1)
 
            # PLACE PIECE
             elif event.key == pygame.K_RETURN:
-                if drop_piece(selected_col, selected_depth, current_player):
-                    current_player = 3 - current_player
+                if drop_piece(selected_col, selected_depth):
 
+                    if game.current_player == 2:
+                        move = get_best_move(game)
+                        if move:
+                            game.make_move(*move)
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
 
@@ -168,8 +174,12 @@ while running:
 
             depth = selected_depth
 
-            if drop_piece(col, depth, current_player):
-                current_player = 3 - current_player
+            if drop_piece(col, depth):
+
+                if game.current_player == 2:
+                    move = get_best_move(game)
+                    if move:
+                        game.make_move(*move)
             
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()

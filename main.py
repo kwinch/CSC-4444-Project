@@ -30,6 +30,11 @@ def run_game():
 
             z = game.make_move(x, y)
             print(f"Placed at (x={x}, y={y}, z={z})\n")
+            
+            if game.current_player == 2:  # AI turn
+                move = get_best_move(game)
+                if move:
+                    game.make_move(*move)
 
         except Exception as e:
             print(f"Invalid move: {e}\n")
@@ -42,5 +47,5 @@ def run_game():
         print(f"Player {game.winner} wins!")
 
 
-if __name__ == "__main__":
-    run_game()
+#if __name__ == "__main__":
+    #run_game()
